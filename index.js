@@ -74,9 +74,9 @@ app.post("/api/persons", (request, response) => {
   response.json(newPerson);
 });
 
-app.get("/", (request, response) => {
+/* app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
-});
+}); */
 
 app.get("/api/persons", (request, response) => {
   response.json(persons);
