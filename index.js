@@ -1,46 +1,37 @@
-require("dotenv").config();
-const { response } = require("express");
-const morgan = require("morgan");
-const express = require("express");
+/* eslint-disable consistent-return */
+require('dotenv').config();
+const morgan = require('morgan');
+const express = require('express');
+
 const app = express();
-const cors = require("cors");
-const Person = require("./models/person");
+const cors = require('cors');
+const Person = require('./models/person');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("build"));
+app.use(express.static('build'));
 app.use(
-  morgan(function (tokens, req, res) {
-    morgan.token("type", function (req, res) {
-      return req.method === "POST" ? JSON.stringify(req.body) : "";
-    });
+  morgan((tokens, req, res) => {
+    morgan.token('type', () => (req.method === 'POST' ? JSON.stringify(req.body) : ''));
     return [
       tokens.method(req, res),
       tokens.url(req, res),
       tokens.status(req, res),
-      tokens.res(req, res, "content-length"),
-      "-",
-      tokens["response-time"](req, res),
-      "ms",
+      tokens.res(req, res, 'content-length'),
+      '-',
+      tokens['response-time'](req, res),
+      'ms',
       tokens.type(req, res),
-    ].join(" ");
+    ].join(' ');
   })
 );
 
-let persons = [
-  {
-    name: "Didn't load",
-    number: "404",
-    id: 1,
-  },
-];
-
-app.post("/api/persons", (request, response, next) => {
+app.post('/api/persons', (request, response, next) => {
   const newPerson = { ...request.body };
 
   if (!newPerson.name || !newPerson.number) {
     return response.status(400).json({
-      error: "name and/or number is missing",
+      error: 'name and/or number is missing',
     });
   }
 
@@ -57,8 +48,8 @@ app.post("/api/persons", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.put("/api/persons/:id", (request, response, next) => {
-  const body = request.body;
+app.put('/api/persons/:id', (request, response, next) => {
+  const { body } = request;
 
   const person = { number: body.number };
 
@@ -72,17 +63,17 @@ app.put("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.get("/", (request, response) => {
-  response.send("<h1>Hello World!</h1>");
+app.get('/', (request, response) => {
+  response.send('<h1>Hello World!</h1>');
 });
 
-app.get("/api/persons", (request, response) => {
+app.get('/api/persons', (request, response) => {
   Person.find({}).then((people) => {
     response.json(people);
   });
 });
 
-app.get("/info", (request, response) => {
+app.get('/info', (request, response) => {
   Person.find({}).then((people) => {
     response.send(`
     <div>
@@ -93,7 +84,7 @@ app.get("/info", (request, response) => {
   });
 });
 
-app.get("/api/persons/:id", (request, response, next) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
     .then((person) => {
       if (person) {
@@ -105,26 +96,25 @@ app.get("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
-    .then((result) => {
+    .then(() => {
       response.status(204).end();
     })
     .catch((error) => next(error));
 });
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" });
+  response.status(404).send({ error: 'unknown endpoint' });
 };
 
 app.use(unknownEndpoint);
 
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message);
-
-  if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
-  } else if (error.name === "ValidationError") {
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  }
+  if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message });
   }
 
@@ -135,5 +125,5 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  // console.log(`Server running on port ${PORT}`);
 });
